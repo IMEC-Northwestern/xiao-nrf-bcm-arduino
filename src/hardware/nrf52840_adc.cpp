@@ -1,6 +1,6 @@
 #include "nrf52840_adc.h"
 
-#if defined(ARDUINO_ARCH_NRF52840)
+// #if defined(ARDUINO_ARCH_NRF52840)
 
 #include <hal/nrf_pdm.h>
 #define DEFAULT_PDM_GAIN     20
@@ -19,9 +19,11 @@ NRF52840_ADC_Class::~NRF52840_ADC_Class()
 
 uint8_t NRF52840_ADC_Class::begin()
 {
-  _dinPin = PIN_PDM_DIN;
-  _clkPin = PIN_PDM_CLK;
-  _pwrPin = PIN_PDM_PWR;
+  // _dinPin = PIN_PDM_DIN;
+  // _clkPin = PIN_PDM_CLK;
+  _dinPin = 0;   // P0.02
+  _clkPin = 1;  // P0.03
+  _pwrPin = PIN_PDM_PWR;  // PWR not used, just connect to 3V3
   _gain = -1;
 
   // Enable high frequency oscillator if not already enabled
@@ -149,17 +151,19 @@ if (nrf_pdm_event_check(NRF_PDM_EVENT_STARTED)) {
 		Actually sizeof(uint32_t) / sizeof(uint16_t) = 2.
 	*/
     if (*NRF52840_ADC_Class::_buf_count_ptr) {
-        nrf_pdm_buffer_set((uint32_t*)(NRF52840_ADC_Class::buf_0_ptr), *NRF52840_ADC_Class::_buf_size_ptr / 2);
+        nrf_pdm_buffer_set((uint32_t*)(NRF52840_ADC_Class::buf_0_ptr), *NRF52840_ADC_Class::_buf_size_ptr);
         if(NRF52840_ADC_Class::_onReceive){
+            // Serial.println("onReceiveBuf1");
             NVIC_DisableIRQ(PDM_IRQn);
-            NRF52840_ADC_Class::_onReceive(NRF52840_ADC_Class::buf_1_ptr, *NRF52840_ADC_Class::_buf_size_ptr / 2);
+            NRF52840_ADC_Class::_onReceive(NRF52840_ADC_Class::buf_1_ptr, *NRF52840_ADC_Class::_buf_size_ptr);
             NVIC_EnableIRQ(PDM_IRQn);
         }
     } else {
-        nrf_pdm_buffer_set((uint32_t*)(NRF52840_ADC_Class::buf_1_ptr), *NRF52840_ADC_Class::_buf_size_ptr / 2);
+        nrf_pdm_buffer_set((uint32_t*)(NRF52840_ADC_Class::buf_1_ptr), *NRF52840_ADC_Class::_buf_size_ptr);
         if(NRF52840_ADC_Class::_onReceive){
+            // Serial.println("onReceiveBuf0");
             NVIC_DisableIRQ(PDM_IRQn);
-            NRF52840_ADC_Class::_onReceive(NRF52840_ADC_Class::buf_0_ptr, *NRF52840_ADC_Class::_buf_size_ptr / 2);
+            NRF52840_ADC_Class::_onReceive(NRF52840_ADC_Class::buf_0_ptr, *NRF52840_ADC_Class::_buf_size_ptr);
             NVIC_EnableIRQ(PDM_IRQn);
         }
     }
@@ -179,4 +183,4 @@ if (nrf_pdm_event_check(NRF_PDM_EVENT_STARTED)) {
   }
 }
 
-#endif
+// #endif
